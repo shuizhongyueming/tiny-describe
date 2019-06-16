@@ -1,7 +1,7 @@
 {
   "name": "tiny-describe",
   "version": "1.0.0",
-  "description": "a tiny test framwork for simple situation",
+  "description": "a tiny test framework for simple situation",
   "main": "describe.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
