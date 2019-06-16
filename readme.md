@@ -17,7 +17,7 @@ describe('some spec name', describe => {
   assert.equal(1, 1);
 
   describe('some sub spec', () => {
-    assert.equal(1 * 1, 1);
+    assert.equal(1 * 1 , 1);
   });
 });
 ```
