@@ -7,6 +7,7 @@ let _outputGenerator: OutputGenerator = () => {
     id: number;
     parentId: number;
     info: string;
+    isFailed?: boolean;
   };
   let outputCache: OutputData[] = [];
 
@@ -24,11 +25,19 @@ let _outputGenerator: OutputGenerator = () => {
   }
 
   function output() {
+    let isAllPassed = true;
     const sorted = outputCache.sort((a, b) => {
       return a.id - b.id;
     });
 
-    sorted.forEach(d => process.stdout.write(d.info));
+    sorted.forEach(d => {
+      process.stdout.write(d.info);
+      if (d.isFailed) {
+        isAllPassed = false;
+      }
+    });
+
+    return isAllPassed;
   }
 
   return {
@@ -52,7 +61,7 @@ let _outputGenerator: OutputGenerator = () => {
               info += `${stack}\n`;
             }
           }
-          log({ deep, id, parentId, info });
+          log({ deep, id, parentId, info, isFailed: true });
           break;
       }
     },

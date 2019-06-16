@@ -48,6 +48,6 @@ export async function describe(
   }
 
   if (deep === 1) {
-    outputLog();
+    return outputLog();
   }
 }
