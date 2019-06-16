@@ -7,8 +7,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "success.js",
-      "program": "${workspaceFolder}/demo/success.js"
+      "name": "success-with-assert",
+      "program": "${workspaceFolder}/demo/success-with-assert.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "failed-with-assert",
+      "program": "${workspaceFolder}/demo/failed-with-assert.js"
     }
   ]
 }

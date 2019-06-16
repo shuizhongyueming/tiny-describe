@@ -1,16 +1,7 @@
-import { groupNameGenerator } from "./groupNameGenerator";
+import { DescribeCallback } from "./types";
 import { outputGenerator } from "./outputGenerator";
 
-const output = outputGenerator();
-
-export type DescribeCallback = (describe: Describe) => Promise<void> | void;
-export type Describe = (
-  specName: string,
-  callback: DescribeCallback,
-  deep?: number,
-  id?: number,
-  parentId?: number
-) => void;
+const { inputLog, outputLog } = outputGenerator();
 
 let uniId = 0;
 
@@ -25,38 +16,38 @@ export async function describe(
   id: number = getId(),
   parentId: number = 0
 ) {
-  const groupName = groupNameGenerator(deep, specName);
   const subDeep = deep + 1;
   let isSubDescribeCalled = false;
   const state = {
-    groupName,
     deep,
     specName,
     isSubDescribeCalled: false,
     id,
     parentId
   };
-  output({ ...state, progress: "begin" });
+  inputLog({ ...state, progress: "begin" });
 
   try {
     await callback(
       async (subSpecName: string, subCallback: DescribeCallback) => {
         if (isSubDescribeCalled === false) {
           isSubDescribeCalled = true;
-          output({ ...state, progress: "beforeSubDescribeCall" });
+          inputLog({ ...state, progress: "beforeSubDescribeCall" });
         }
         await describe(subSpecName, subCallback, subDeep, getId(), id);
       }
     );
-    output({ ...state, isSubDescribeCalled, progress: "success" });
+    inputLog({ ...state, isSubDescribeCalled, progress: "success" });
   } catch (e) {
-    output({
+    inputLog({
       ...state,
       isSubDescribeCalled,
       progress: "error",
       error: e
     });
-    e.message = `${groupName} 失败\n ${e.message}`;
-    throw e;
+  }
+
+  if (deep === 1) {
+    outputLog();
   }
 }

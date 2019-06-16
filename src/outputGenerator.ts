@@ -1,23 +1,5 @@
-import { green, red, blue } from "colors";
-import { moveCursor, clearScreenDown } from "readline";
-
-export type OutputHandler = (state: {
-  isSubDescribeCalled?: boolean;
-  deep: number;
-  id: number;
-  parentId: number;
-  error?: Error;
-  groupName: string;
-  specName: string;
-  progress: CurrentProgress;
-}) => void;
-export type OutputGenerator = () => OutputHandler;
-
-export type CurrentProgress =
-  | "begin"
-  | "beforeSubDescribeCall"
-  | "success"
-  | "error";
+import { OutputGenerator } from "./types";
+import { green, red } from "colors";
 
 let _outputGenerator: OutputGenerator = () => {
   type OutputData = {
@@ -30,51 +12,51 @@ let _outputGenerator: OutputGenerator = () => {
 
   function log(data: OutputData) {
     const filtered = outputCache.filter(d => d.id !== data.id);
-    const num = outputCache.reduce((num, d) => {
-      const matchs = d.info.match(/\n/g);
-      if (matchs) {
-        num += matchs.length;
-      }
-      return num;
-    }, 0);
-    moveCursor(process.stdout, 0, -num);
-    clearScreenDown(process.stdout);
-    // clearLine(process.stdout, 0);
     outputCache = [...filtered, data];
-
-    output(outputCache);
   }
 
-  function output(datas: OutputData[]) {
-    const sorted = datas.sort((a, b) => {
+  function indentFormater(deep: number) {
+    return "  ".repeat(deep);
+  }
+
+  function groupNameGenerator(deep: number, specName: string) {
+    return `${indentFormater(deep)}${"#".repeat(deep)} ${specName}`;
+  }
+
+  function output() {
+    const sorted = outputCache.sort((a, b) => {
       return a.id - b.id;
     });
 
     sorted.forEach(d => process.stdout.write(d.info));
   }
 
-  return ({ deep, groupName, error, progress, id, parentId }) => {
-    switch (progress) {
-      case "begin":
-        log({ deep, id, parentId, info: `${groupName}\n` });
-        break;
-      case "success":
-        log({ deep, id, parentId, info: green(`${groupName}\n`) });
-        break;
-      case "error":
-        let info = red(groupName);
-        console.log();
-        if (deep === 1) {
-          info += blue("\n************************");
-          info += blue("\n******* 错误内容 *******");
-          info += blue("\n************************\n");
-          if (error) {
-            info += error.message;
+  return {
+    inputLog: ({ deep, error, progress, id, parentId, specName }) => {
+      const groupName = groupNameGenerator(deep, specName);
+      switch (progress) {
+        case "begin":
+          log({ deep, id, parentId, info: `${groupName}\n` });
+          break;
+        case "success":
+          log({ deep, id, parentId, info: green(`${groupName}\n`) });
+          break;
+        case "error":
+          let info = red(`${groupName}\n`);
+          if (error && error.isOutput !== true) {
+            if (error && error.stack) {
+              const stack = error.stack
+                .split("\n")
+                .map(l => `${indentFormater(deep)}${l}`)
+                .join("\n");
+              info += `${stack}\n`;
+            }
           }
-        }
-        log({ deep, id, parentId, info });
-        break;
-    }
+          log({ deep, id, parentId, info });
+          break;
+      }
+    },
+    outputLog: output
   };
 };
 

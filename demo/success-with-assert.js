@@ -26,4 +26,4 @@ describe("some title", describe => {
   });
 });
 
-// run this with: `node success.js`
+// run this with: `node success-with-assert.js`
