@@ -4,6 +4,11 @@ import { outputGenerator } from "./outputGenerator";
 const { inputLog, outputLog } = outputGenerator();
 
 let uniId = 0;
+let isThrowError = false;
+
+export function setIsThrowError(a: boolean) {
+  isThrowError = a;
+}
 
 function getId() {
   return uniId++;
@@ -28,15 +33,18 @@ export async function describe(
   inputLog({ ...state, progress: "begin" });
 
   try {
-    await callback(
-      async (subSpecName: string, subCallback: DescribeCallback) => {
-        if (isSubDescribeCalled === false) {
-          isSubDescribeCalled = true;
-          inputLog({ ...state, progress: "beforeSubDescribeCall" });
-        }
-        await describe(subSpecName, subCallback, subDeep, getId(), id);
+    const subDescribe = async (
+      subSpecName: string,
+      subCallback: DescribeCallback
+    ) => {
+      if (isSubDescribeCalled === false) {
+        isSubDescribeCalled = true;
+        inputLog({ ...state, progress: "beforeSubDescribeCall" });
       }
-    );
+      await describe(subSpecName, subCallback, subDeep, getId(), id);
+    };
+
+    await callback(subDescribe);
     inputLog({ ...state, isSubDescribeCalled, progress: "success" });
   } catch (e) {
     inputLog({
@@ -45,6 +53,15 @@ export async function describe(
       progress: "error",
       error: e
     });
+
+    // if call directly no need to throw error
+    if (isThrowError) {
+      if (e.isOutput !== true) {
+        e.message = `[${specName}] failed with ${e.name}: ${e.message}`;
+        e.isOutput = true;
+      }
+      throw e;
+    }
   }
 
   if (deep === 1) {
