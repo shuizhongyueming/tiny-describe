@@ -5,23 +5,23 @@ function sleep(time) {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
-describe("some title", describe => {
+describe("some title", async describe => {
   assert.equal(1 + 1, 2);
 
-  describe("some sub title1", describe => {
+  await describe("some sub title1", async describe => {
     assert.equal(1 * 1, 1);
     assert.equal(1 / 1, 1);
 
-    describe("some sub title1 deeper", describe => {
+    await describe("some sub title1 deeper", describe => {
       assert.equal(1 - 1, 0);
     });
 
-    describe("some sub title1 deeper2", describe => {
+    await describe("some sub title1 deeper2", describe => {
       assert.equal(1 % 1, 0);
     });
   });
 
-  describe("some sub title2", describe => {
+  await describe("some sub title2", describe => {
     assert.equal(1 ** 2, 1);
   });
 });

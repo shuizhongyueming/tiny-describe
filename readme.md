@@ -6,7 +6,7 @@
 
 This is a tiny test framework which you can run at runtime or a development environment.
 
-It just help you to organize your assert and make sure they are called in ordered sequence.
+It just help you to organize your assert and make sure they are called in ordered sequence with async/await.
 
 It is good for a simple or temp use, but if you want to build a well featured test, use other test frameworks like Mocha, Jest.
 
