@@ -13,8 +13,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "failed-with-assert",
-      "program": "${workspaceFolder}/demo/failed-with-assert.js"
+      "name": "failed-with-throw",
+      "program": "${workspaceFolder}/demo/failed-with-throw.js"
     }
   ]
 }

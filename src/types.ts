@@ -21,6 +21,7 @@ export type IutputLogHandler = (state: {
   specName: string;
   progress: CurrentProgress;
 }) => void;
+
 export type OutputGenerator = () => {
   inputLog: IutputLogHandler;
   outputLog: () => void;

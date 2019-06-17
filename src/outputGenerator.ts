@@ -1,4 +1,4 @@
-import { OutputGenerator } from "./types";
+import { OutputGenerator, IutputLogHandler } from "./types";
 import { green, red } from "colors";
 
 let _outputGenerator: OutputGenerator = () => {
@@ -6,6 +6,7 @@ let _outputGenerator: OutputGenerator = () => {
     deep: number;
     id: number;
     parentId: number;
+    specName: string;
     info: string;
     isFailed?: boolean;
   };
@@ -14,6 +15,21 @@ let _outputGenerator: OutputGenerator = () => {
   function log(data: OutputData) {
     const filtered = outputCache.filter(d => d.id !== data.id);
     outputCache = [...filtered, data];
+
+    if (data.isFailed === true && data.id !== 0) {
+      // a spec failed, it's parent should also failed
+      const parent = outputCache.find(d => d.id === data.parentId);
+      if (parent) {
+        const { deep, specName, id, parentId } = parent;
+        inputLog({
+          deep,
+          specName,
+          id,
+          parentId,
+          progress: "error"
+        });
+      }
+    }
   }
 
   function indentFormater(deep: number) {
@@ -24,7 +40,7 @@ let _outputGenerator: OutputGenerator = () => {
     return `${indentFormater(deep)}${"#".repeat(deep)} ${specName}`;
   }
 
-  function output() {
+  function outputLog() {
     let isAllPassed = true;
     const sorted = outputCache.sort((a, b) => {
       return a.id - b.id;
@@ -40,32 +56,45 @@ let _outputGenerator: OutputGenerator = () => {
     return isAllPassed;
   }
 
-  return {
-    inputLog: ({ deep, error, progress, id, parentId, specName }) => {
-      const groupName = groupNameGenerator(deep, specName);
-      switch (progress) {
-        case "begin":
-          log({ deep, id, parentId, info: `${groupName}\n` });
-          break;
-        case "success":
-          log({ deep, id, parentId, info: green(`${groupName}\n`) });
-          break;
-        case "error":
-          let info = red(`${groupName}\n`);
-          if (error && error.isOutput !== true) {
-            if (error && error.stack) {
-              const stack = error.stack
-                .split("\n")
-                .map(l => `${indentFormater(deep)}${l}`)
-                .join("\n");
-              info += `${stack}\n`;
-            }
+  const inputLog: IutputLogHandler = ({
+    deep,
+    error,
+    progress,
+    id,
+    parentId,
+    specName
+  }) => {
+    const groupName = groupNameGenerator(deep, specName);
+    switch (progress) {
+      case "begin":
+        log({ deep, id, specName, parentId, info: `${groupName}\n` });
+        break;
+      case "success":
+        const outputData = outputCache.find(d => d.id === id);
+        // a failed output can't sucess
+        if (!outputData || outputData.isFailed !== true) {
+          log({ deep, id, specName, parentId, info: green(`${groupName}\n`) });
+        }
+        break;
+      case "error":
+        let info = red(`${groupName}\n`);
+        if (error && error.isOutput !== true) {
+          if (error && error.stack) {
+            const stack = error.stack
+              .split("\n")
+              .map(l => `${indentFormater(deep)}${l}`)
+              .join("\n");
+            info += `${stack}\n`;
           }
-          log({ deep, id, parentId, info, isFailed: true });
-          break;
-      }
-    },
-    outputLog: output
+        }
+        log({ deep, id, specName, parentId, info, isFailed: true });
+        break;
+    }
+  };
+
+  return {
+    inputLog,
+    outputLog
   };
 };
 

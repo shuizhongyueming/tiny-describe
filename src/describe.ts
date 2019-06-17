@@ -23,6 +23,7 @@ export async function describe(
 ) {
   const subDeep = deep + 1;
   let isSubDescribeCalled = false;
+  let specErr: Error | null = null;
   const state = {
     deep,
     specName,
@@ -51,7 +52,7 @@ export async function describe(
       ...state,
       isSubDescribeCalled,
       progress: "error",
-      error: e
+      error: isThrowError ? null : e
     });
 
     // if call directly no need to throw error
@@ -60,11 +61,19 @@ export async function describe(
         e.message = `[${specName}] failed with ${e.name}: ${e.message}`;
         e.isOutput = true;
       }
-      throw e;
+
+      if (deep === 1) {
+        specErr = e;
+      } else {
+        throw e;
+      }
     }
   }
 
   if (deep === 1) {
-    return outputLog();
+    outputLog();
+    if (specErr) {
+      throw specErr;
+    }
   }
 }
