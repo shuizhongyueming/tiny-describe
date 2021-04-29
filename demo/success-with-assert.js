@@ -6,23 +6,23 @@ function sleep(time) {
 }
 
 describe("some title", async describe => {
-  assert.equal(1 + 1, 2);
+  assert.strictEqual(1 + 1, 2);
 
   await describe("some sub title1", async describe => {
-    assert.equal(1 * 1, 1);
-    assert.equal(1 / 1, 1);
+    assert.strictEqual(1 * 1, 1);
+    assert.strictEqual(1 / 1, 1);
 
     await describe("some sub title1 deeper", describe => {
-      assert.equal(1 - 1, 0);
+      assert.strictEqual(1 - 1, 0);
     });
 
     await describe("some sub title1 deeper2", describe => {
-      assert.equal(1 % 1, 0);
+      assert.strictEqual(1 % 1, 0);
     });
   });
 
   await describe("some sub title2", describe => {
-    assert.equal(1 ** 2, 1);
+    assert.strictEqual(1 ** 2, 1);
   });
 });
 
